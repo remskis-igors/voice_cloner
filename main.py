@@ -1,29 +1,39 @@
-import speech_recognition as sr
+import json
+import logging
+from pathlib import Path
+from src.speech.synthesizer import Synthesizer
 
-class AudioRecorder:
-    def __init__(self):
-        self.recognizer = sr.Recognizer()
-        self.microphone = sr.Microphone()
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    def record_audio(self, filename, duration=5):
-        try:
-            with self.microphone as source:
-                self.recognizer.adjust_for_ambient_noise(source)
-                print("Recording for {} seconds...".format(duration))
-                audio = self.recognizer.listen(source, phrase_time_limit=duration)
+def load_general_config():
+    # Load general configuration
+    config_dir = Path(__file__).resolve().parent / "resources"
+    config_path = config_dir / "general_config.json"
 
-            with open(filename, "wb") as f:
-                f.write(audio.get_wav_data())
-                print(f"Audio recorded and saved to {filename}")
+    with open(config_path, 'r') as f:
+        general_config = json.load(f)
 
-        except sr.RequestError as e:
-            print(f"Error during request: {e}")
+    output_directory = general_config['output_directory']
+    logging_level = general_config['logging_level']
 
-        except sr.UnknownValueError:
-            print("Unknown error occurred during audio recognition")
+    logging.basicConfig(level=logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
 
+    return output_directory
+
+def main():
+    output_directory = load_general_config()
+
+    # Initialize the Synthesizer
+    config_dir = Path(__file__).resolve().parent / "resources"
+    synthesizer = Synthesizer(config_dir)
+
+    # Example usage of the Synthesizer
+    sample_text = "Hello, this is a test."
+    sample_embedding = None  # Replace with actual speaker embedding if required
+    output_path = str(output_directory / "output.wav")
+
+    synthesizer.synthesize(sample_text, sample_embedding, output_path)
 
 if __name__ == "__main__":
-    recorder = AudioRecorder()
-    output_file = "recorded_audio.wav"
-    recorder.record_audio(output_file)
+    main()

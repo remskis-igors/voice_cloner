@@ -1,0 +1,5 @@
+{
+  "sample_rate": 22050,
+  "max_length": 100,
+  "batch_size": 32
+}
